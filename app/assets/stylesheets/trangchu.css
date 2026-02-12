@@ -7,7 +7,7 @@
 :root {
     --primary-color: #2563eb;
     --secondary-color: #3b82f6;
-    --dark-color: #000000;
+    --dark-color: #1e293b;
 }
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -136,4 +136,28 @@ footer {
     padding-top: 2rem;
     border-top: 1px solid #334155;
     color: #94a3b8;
+}
+
+.chatbot-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 1.8rem;
+    cursor: pointer;
+    box-shadow: 0 5px 20px rgba(37, 99, 235, 0.4);
+    transition: transform 0.3s;
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chatbot-button:hover {
+    transform: scale(1.1);
 }
