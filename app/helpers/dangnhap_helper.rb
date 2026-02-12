@@ -1,0 +1,2 @@
+module DangnhapHelper
+end
