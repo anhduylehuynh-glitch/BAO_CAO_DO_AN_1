@@ -1,11 +1,11 @@
-body{
+.login{
     display: flex;
     justify-content: center;
     align-items: center;
     background: #84abf8;
     min-height: 100vh;
 }
-form{
+.login_form{
     background: rgb(252, 242, 242);
     padding: 40px 50px;
     border-radius: 15px;
@@ -13,30 +13,29 @@ form{
     width: 400px;
     text-align: center;
 }
-form label{
-    margin-bottom: 25px;
-    margin-top: 0px;
+.login_form label{
+    margin: 25px;
     color: #2563eb;
     font-weight: bold;
     font-size: 25px;
 }
-form table{
-    width: 100%;
+.login_form table{
+    width: 100%; 
 }
-form table th:first-child{
+.login_form table th:first-child{
     text-align:right;
     font-weight: 500;
     font-size: 20px;
     padding: 10px 0;
 }
-form table input{
+.login_form table input{
     width: 100%;
     padding: 10px 12px;
     margin: 10px;
     border-radius: 8px;
     border: 1px solid #ccc;
 }
-form button {
+.login_form button {
     width: 80%;
     padding: 10px;
     background: #3775f2;
@@ -46,6 +45,6 @@ form button {
     font-size: 20px;
     margin-top: 10px;
 }
-form button:hover{
+.login_form button:hover{
     background: #0353f1;
 }

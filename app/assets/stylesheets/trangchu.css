@@ -51,7 +51,7 @@ nav {
     transition: opacity 0.3s;
     font-weight: 500;
 }
-.nav-menu a:hover {
+.menu a:hover {
     opacity: 0.8;
 }
 .banner {
