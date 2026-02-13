@@ -1,0 +1,146 @@
+<div class="header">
+        <div class="logo">
+            <%= image_tag "logovlute.png",  width: 50 %>
+            Hệ Thống Tư Vấn Tuyển Sinh
+        </div>
+        <ul class="menu">
+            <li><%= link_to "Trang chủ", trangchu_index_path %></li>
+            <li>Thông Tin Trường</li>
+            <li>Tin Tức</li>
+            <li>Ngành Học</li>
+            <li>Lịch Tuyển Sinh</li>
+            <li><%= link_to "Nộp hồ sơ", nophoso_nophoso_path %></li>
+            <li><%= link_to "Đăng nhập", dangnhap_dangnhap_path %></li>
+        </ul>
+</div>
+
+<div class="content">
+    <form class="form_thisinh">
+        <label>THÔNG TIN THÍ SINH</label>
+        <table>
+            <tr>
+                <th>Họ và tên: </th>
+                <th>
+                    <input type="text" name="hoten" placeholder="Nhập họ và tên">
+                </th>
+            </tr>
+
+            <tr>
+                <th>Số CCCD: </th>
+                <th>
+                    <input type="text" name="cccd" placeholder="Nhập số căn cước công dân">
+                </th>
+            </tr>
+
+            <tr>
+                <th>Ngày sinh: </th>
+                <th>
+                    <input type="date" name="ngaysinh">
+                </th>
+            </tr>
+
+            <tr>
+                <th>Số điện thoại: </th>
+                <th>
+                    <input type="text" name="sdt" placeholder="Nhập số điện thoại">
+                </th>
+            </tr>
+
+            <tr>
+                <th>Email: </th>
+                <th>
+                    <input type="email" name="email" placeholder="Nhập địa chỉ email">
+                </th>
+            </tr>
+
+            <tr>
+                <th>Tỉnh/Thành phố: </th>
+                <th>
+                    <select name="tinh">
+                        <option>Chọn tỉnh/thành phố</option>
+                        <option>An Giang</option>
+                        <option>Bắc Giang</option>
+                        <option>Bắc Ninh</option>
+                        <option>Bến Tre</option>
+                        <option>Bình Dương</option>
+                        <option>Bình Định</option>
+                        <option>Cà Mau</option>
+                        <option>Cần Thơ</option>
+                        <option>Cao Bằng</option>
+                        <option>Đà Nẵng</option>
+                        <option>Đắk Lắk</option>
+                        <option>Điện Biên</option>
+                        <option>Đồng Nai</option>
+                        <option>Đồng Tháp</option>
+                        <option>Gia Lai</option>
+                        <option>Hà Nội</option>
+                        <option>Hà Tĩnh</option>
+                        <option>Hải Phòng</option>
+                        <option>Hưng Yên</option>
+                        <option>Khánh Hòa</option>
+                        <option>Lai Châu</option>
+                        <option>Lâm Đồng</option>
+                        <option>Lạng Sơn</option>
+                        <option>Lào Cai</option>
+                        <option>Nghệ An</option>
+                        <option>Ninh Bình</option>
+                        <option>Phú Thọ</option>
+                        <option>Quảng Ngãi</option>
+                        <option>Quảng Ninh</option>
+                        <option>Thanh Hóa</option>
+                        <option>Thừa Thiên Huế</option>
+                        <option>TP. Hồ Chí Minh</option>
+                        <option>Tuyên Quang</option>
+                        <option>Vĩnh Long</option>
+                    </select>
+                </th>
+            </tr>
+
+            <tr>
+                <th>Trường THPT: </th>
+                <th>
+                    <input type="text" name="truong" placeholder="Nhập tên trường">
+                </th>
+            </tr>
+
+            <tr>
+                <th></th>
+                <th>
+                    <button type="submit">Gửi Thông Tin</button>
+                </th>
+            </tr>
+        </table>
+    </form>
+</div>
+</div>
+<div class="footer">
+    <div class="footer-content">
+        <div class="footer1">
+            <h3>Về Chúng Tôi</h3>
+            <p style="color: #94a3b8; line-height: 1.8;">
+                Hệ thống tư vấn tuyển sinh.
+            </p>
+        </div>
+        <div class="footer1">
+            <h3>Liên Kết Nhanh</h3>
+            <ul>
+                <li>Ngành học<</li>
+                <li>Lịch tuyển sinh</li>
+                <li>Nộp hồ sơ</li>
+                <li>Câu hỏi thường gặp</li>
+            </ul>
+        </div>
+        <div class="footer1">
+            <h3>Liên Hệ</h3>
+            <ul>
+                <li>Hotline: 123</li>
+                <li>Email: tuyensinh@vlute.edu.vn</li>
+                <li>Địa chỉ: Vĩnh Long</li>
+                <li>Giờ làm việc: 8:00 - 17:00</li>
+            </ul>
+        </div>
+    </div>
+    <div class="footer2">
+        <p>&copy; 2026 Hệ Thống Tư Vấn Tuyển Sinh </p>
+    </div>
+</div>
