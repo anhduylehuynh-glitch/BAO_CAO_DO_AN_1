@@ -5,7 +5,7 @@ require 'json'
 class ChatController < ApplicationController
   skip_before_action :verify_authenticity_token, only: [:create]
 
- GROQ_API_KEY = ""  # paste key của bạn vào đây
+  GROQ_API_KEY = ENV["GROQ_API_KEY"] # paste key của bạn vào đây
   GROQ_URL     = "https://api.groq.com/openai/v1/chat/completions"
   GROQ_MODEL   = "llama-3.3-70b-versatile"
 
