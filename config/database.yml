@@ -16,5 +16,12 @@ test:
   database: tuvantuyensinh_test
 
 production:
-  <<: *default
-  database: tuvantuyensinh_production
+  adapter: mysql2
+  encoding: utf8mb4
+  pool: 5
+
+  database: <%= ENV["MYSQLDATABASE"] %>
+  username: <%= ENV["MYSQLUSER"] %>
+  password: <%= ENV["MYSQLPASSWORD"] %>
+  host: <%= ENV["MYSQLHOST"] %>
+  port: <%= ENV["MYSQLPORT"] %>
