@@ -67,5 +67,5 @@ group :test do
   gem "capybara"
   gem "selenium-webdriver"
 
-gem "resend"
 end
+gem "resend"
