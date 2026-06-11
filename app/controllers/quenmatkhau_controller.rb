@@ -25,6 +25,8 @@ class QuenmatkhauController < ApplicationController
 
             flash[:success] = "Đã gửi mã OTP về email"
 
+            redirect_to quenmatkhau_path(step: "otp") and return
+
         rescue => e
             Rails.logger.error "MAIL ERROR: #{e.class}"
             Rails.logger.error e.message
