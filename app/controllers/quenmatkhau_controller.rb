@@ -5,7 +5,6 @@ class QuenmatkhauController < ApplicationController
 
     # ===== GỬI OTP =====
     def gui_otp
-
         email = params[:email]
 
         user = Nguoidung.find_by(email: email)
@@ -21,11 +20,20 @@ class QuenmatkhauController < ApplicationController
         session[:otp] = otp
         session[:reset_email] = email
 
-        OtpMailer.gui_otp(email, otp).deliver_now
+        begin
+            OtpMailer.gui_otp(email, otp).deliver_now
 
-        flash[:success] = "Đã gửi mã OTP về email"
+            flash[:success] = "Đã gửi mã OTP về email"
 
-        redirect_to quenmatkhau_path(step: "otp")
+        rescue => e
+            Rails.logger.error "MAIL ERROR: #{e.class}"
+            Rails.logger.error e.message
+            Rails.logger.error e.backtrace.first(10).join("\n")
+
+            flash[:error] = "Lỗi gửi mail: #{e.class}"
+        end
+
+        redirect_to quenmatkhau_path
     end
 
     # ===== KIỂM TRA OTP =====
