@@ -216,6 +216,7 @@
                     <th>
                         <label class="file" for="filegiayks"></label>
                         <input type="file" id="filegiayks" name="GIAYKHAISINH" accept=".pdf,.jpg,.jpeg,.png" multiple required>
+                        <div id="preview-giayks" class="image-preview-container"></div>
                     </th>
                 </tr>
 
@@ -231,6 +232,7 @@
                     <th>
                         <label class="file" for="filecccdt"> </label>
                         <input type="file" id="filecccdt" name="ANHCCCDT" accept=".pdf,.jpg,.jpeg,.png" multiple required>
+                        <div id="preview-cccdt" class="image-preview-container"></div>
                     </th>
                 </tr>
 
@@ -239,6 +241,7 @@
                     <th>
                         <label class="file" for="filecccds"></label>
                         <input type="file" id="filecccds" name="ANHCCCDS" accept=".pdf,.jpg,.jpeg,.png" multiple required>
+                        <div id="preview-cccds" class="image-preview-container"></div>
                     </th>
                 </tr>
 
@@ -590,6 +593,7 @@
                     <p> (PDF, JPG, PNG - Tối đa 5MB) </p>
                 </span>
             </div>
+            <div id="preview-hocba" class="image-preview-container"></div>
             </table>
         </div>
         <div class="form-menu">
@@ -605,6 +609,7 @@
                     <p> (PDF, JPG, PNG - Tối đa 5MB) </p>
                 </span>
             </div>
+            <div id="preview-hoso" class="image-preview-container"></div>
             <h3>Hoàn thành hồ sơ</h3>
             <p>Vui lòng kiểm tra lại thông tin trước khi nộp.</p>
             <button type="submit" class="btn-nop">Nộp hồ sơ</button>
@@ -626,7 +631,7 @@
         <div class="footer1">
             <h3>Liên Kết Nhanh</h3>
             <ul>
-                <li>Ngành học<</li>
+                <li>Ngành học</li>
                 <li>Lịch tuyển sinh</li>
                 <li>Nộp hồ sơ</li>
                 <li>Câu hỏi thường gặp</li>
@@ -1137,4 +1142,45 @@
         );
 
     });
+
+
+    // ==========================================
+    // HÀM HIỂN THỊ XEM TRƯỚC HÌNH ẢNH / FILE
+    // ==========================================
+    function previewFiles(input, previewId) {
+        const previewContainer = document.getElementById(previewId);
+        previewContainer.innerHTML = ""; // Xóa các hình ảnh xem trước cũ
+
+        if (input.files && input.files.length > 0) {
+            Array.from(input.files).forEach(file => {
+                const reader = new FileReader();
+                
+                // Tạo một khung div nhỏ bọc quanh mỗi file hiển thị
+                const fileWrapper = document.createElement("div");
+                fileWrapper.className = "preview-item";
+
+                // Kiểm tra xem file có phải là hình ảnh không
+                if (file.type.startsWith("image/")) {
+                    reader.onload = function(e) {
+                        const img = document.createElement("img");
+                        img.src = e.target.result;
+                        img.alt = file.name;
+                        
+                        fileWrapper.appendChild(img);
+                    }
+                    reader.readAsDataURL(file);
+                } else if (file.type === "application/pdf") {
+                    // Nếu là file PDF, hiển thị icon kèm tên file thay vì ảnh lỗi
+                    fileWrapper.innerHTML = `
+                        <div class="pdf-preview">
+                            <span style="font-size: 24px;">📄</span>
+                            <p title="${file.name}">${file.name.substring(0, 15)}...</p>
+                        </div>
+                    `;
+                }
+
+                previewContainer.appendChild(fileWrapper);
+            });
+        }
+    }
 </script>
