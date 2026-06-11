@@ -1,6 +1,6 @@
 class ThongBaoMailer < ApplicationMailer
 
-  default from: "lehuynhanhduy28@gmail.com"
+  default from: "Hệ thống OTP <onboarding@resend.dev>"
 
   def trung_tuyen(thisinh, nganh)
     @thisinh = thisinh

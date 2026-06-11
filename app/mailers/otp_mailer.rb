@@ -1,5 +1,5 @@
 class OtpMailer < ApplicationMailer
-    default from: "lehuynhanhduy28@gmail.com"
+    default from: "Hệ thống OTP <onboarding@resend.dev>"
 
     def gui_otp(email, otp)
         @otp = otp
