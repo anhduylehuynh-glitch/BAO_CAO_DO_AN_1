@@ -77,15 +77,15 @@ RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
 # ==========================================
 FROM base
 
-# [ĐÃ SỬA]: Cài đặt python và thư viện xử lý ảnh hệ thống bằng quyền ROOT trước khi đổi USER
+# [ĐÃ SỬA]: Thay thế libgl1-mesa-glx bằng libgl1 để tương thích hoàn toàn với Debian 12 (Bookworm)
 RUN apt-get update -qq && apt-get install -y --no-install-recommends \
     python3 \
     python3-pip \
-    libgl1-mesa-glx \
+    libgl1 \
     libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives
 
-# [ĐÃ SỬA]: Cài đặt thư viện AI tối ưu RAM khi còn quyền ROOT
+# Cài đặt thư viện AI (Ép sử dụng phiên bản CPU để không bị tràn RAM 512MB của gói Free)
 RUN pip3 install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cpu --break-system-packages
 RUN pip3 install --no-cache-dir ultralytics --break-system-packages
 
