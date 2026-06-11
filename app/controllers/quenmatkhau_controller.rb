@@ -21,6 +21,8 @@ class QuenmatkhauController < ApplicationController
         session[:reset_email] = email
 
         begin
+            Rails.logger.info "SMTP USER=#{ENV['GMAIL_USERNAME']}"
+            Rails.logger.info "SMTP PASS EXISTS=#{ENV['GMAIL_APP_PASSWORD'].present?}"
             OtpMailer.gui_otp(email, otp).deliver_now
 
             flash[:success] = "Đã gửi mã OTP về email"
