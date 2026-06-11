@@ -72,8 +72,22 @@ RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
 
 
 
-# Final stage for app image
+# ==========================================
+# FINAL STAGE FOR APP IMAGE (GIAI ĐOẠN CHẠY)
+# ==========================================
 FROM base
+
+# [ĐÃ SỬA]: Cài đặt python và thư viện xử lý ảnh hệ thống bằng quyền ROOT trước khi đổi USER
+RUN apt-get update -qq && apt-get install -y --no-install-recommends \
+    python3 \
+    python3-pip \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives
+
+# [ĐÃ SỬA]: Cài đặt thư viện AI tối ưu RAM khi còn quyền ROOT
+RUN pip3 install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cpu --break-system-packages
+RUN pip3 install --no-cache-dir ultralytics --break-system-packages
 
 # Run and own only the runtime files as a non-root user for security
 RUN groupadd --system --gid 1000 rails && \
@@ -87,6 +101,6 @@ COPY --chown=rails:rails --from=build /rails /rails
 # Entrypoint prepares the database.
 ENTRYPOINT ["/rails/bin/docker-entrypoint"]
 
-# Start server via Thruster by default, this can be overwritten at runtime
+# Các lệnh cấu hình cổng và khởi chạy máy chủ phải đặt cuối cùng
 EXPOSE 80
 CMD ["./bin/thrust", "./bin/rails", "server"]

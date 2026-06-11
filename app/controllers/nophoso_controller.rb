@@ -6,17 +6,53 @@ class NophosoController < ApplicationController
   end
 
   def xac_thuc_cccd
-    # Lệnh kiểm tra xem hệ thống Render có những lệnh python nào và nằm ở đâu
-    require 'open3'
-    stdout, stderr, status = Open3.capture3("whereis python3; whereis python; echo '---'; echo $PATH")
-    
-    # Trả thẳng kết quả kiểm tra hệ thống về trình duyệt để bạn đọc
-    render json: { 
-      success: false, 
-      message: "Kết quả dò tìm Python trên Render", 
-      detail: stdout,
-      error_log: stderr
-    }
+    file = params[:filecccdt]
+
+    if file.nil?
+      render json: { success: false, message: "Không có file" }
+      return
+    end
+
+    # Đường dẫn lưu file tạm thời để Python đọc
+    filepath = Rails.root.join("ai-service", "uploads", file.original_filename)
+
+    # Tạo thư mục tạm nếu chưa có
+    FileUtils.mkdir_p(Rails.root.join("ai-service", "uploads"))
+
+    # Ghi file ảnh vào thư mục tạm
+    File.open(filepath, "wb") do |f|
+      f.write(file.read)
+    end
+
+    begin
+      require 'open3'
+      
+      # Trên Docker, lệnh python3 luôn khả dụng toàn cục
+      python_cmd = "python3" 
+      script_path = Rails.root.join("ai-service", "detect.py")
+
+      # Chạy script AI và hứng luồng dữ liệu bảo mật
+      stdout, stderr, status = Open3.capture3("#{python_cmd} #{script_path} \"#{filepath}\"")
+
+      if status.success?
+        # Parse chuỗi JSON nhận được từ script Python và trả về cho Client
+        render json: JSON.parse(stdout)
+      else
+        # Ghi log lỗi của Python ra console của Render Docker để tiện debug
+        Rails.logger.error "=== LỖI THỰC THI PYTHON AI ==="
+        Rails.logger.error stderr
+        render json: { success: false, message: "Lỗi thực thi AI trên Docker", detail: stderr }, status: :internal_server_error
+      end
+
+    rescue JSON::ParserError => e
+      Rails.logger.error "=== LỖI PARSE JSON TỪ PYTHON ==="
+      Rails.logger.error "Dữ liệu thô nhận được: #{stdout}"
+      render json: { success: false, message: "Định dạng kết quả AI không hợp lệ", raw: stdout }, status: :internal_server_error
+    rescue StandardError => e
+      Rails.logger.error "=== LỖI HỆ THỐNG CONTROLLER ==="
+      Rails.logger.error e.message
+      render json: { success: false, message: "Lỗi hệ thống: #{e.message}" }, status: :internal_server_error
+    end
   end
 
   def create
