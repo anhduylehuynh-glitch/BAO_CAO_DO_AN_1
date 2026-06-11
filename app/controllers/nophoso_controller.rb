@@ -6,63 +6,17 @@ class NophosoController < ApplicationController
   end
 
   def xac_thuc_cccd
-    file = params[:filecccdt]
-
-    if file.nil?
-      render json: { success: false, message: "Không có file" }
-      return
-    end
-
-    filepath = Rails.root.join("ai-service", "uploads", file.original_filename)
-
-    # tạo thư mục nếu chưa có
-    FileUtils.mkdir_p(Rails.root.join("ai-service", "uploads"))
-
-    # lưu file
-    File.open(filepath, "wb") do |f|
-      f.write(file.read)
-    end
-
-    begin
-      # Sử dụng Open3 để bắt cả kết quả trả về (stdout) lẫn lỗi hệ thống (stderr)
-      require 'open3'
-      
-      # Mẹo: Nên đổi "python" thành "python3" hoặc đường dẫn tuyệt đối đến venv trên server nếu có
-      # Ví dụ: "/var/www/myapp/shared/venv/bin/python"
-      python_cmd = "python3" 
-      script_path = Rails.root.join("ai-service", "detect.py")
-
-      stdout, stderr, status = Open3.capture3("#{python_cmd} #{script_path} \"#{filepath}\"")
-
-      if status.success?
-        # Kiểm tra nếu kết quả rỗng
-        if stdout.strip.blank?
-          render json: { success: false, message: "Script Python không trả về dữ liệu" }, status: :internal_server_error
-        else
-          render json: JSON.parse(stdout)
-        end
-      else
-        # Nếu lệnh python bị lỗi (thiếu thư viện, sai đường dẫn...), ghi log lại trên server
-        Rails.logger.error "=== LỖI SCRIPT AI CCCD ==="
-        Rails.logger.error stderr
-        
-        render json: { 
-          success: false, 
-          message: "Lỗi thực thi AI trên server", 
-          detail: stderr # Gửi chi tiết lỗi về để bạn dễ xem ở tab Network F12
-        }, status: :internal_server_error
-      end
-
-    rescue JSON::ParserError => e
-      Rails.logger.error "=== LỖI PARSE JSON CCCD ==="
-      Rails.logger.error "Dữ liệu nhận được: #{stdout}"
-      render json: { success: false, message: "Định dạng kết quả AI không hợp lệ", raw: stdout }, status: :internal_server_error
-
-    rescue StandardError => e
-      Rails.logger.error "=== LỖI HỆ THỐNG CONTROLLER ==="
-      Rails.logger.error e.message
-      render json: { success: false, message: "Lỗi hệ thống: #{e.message}" }, status: :internal_server_error
-    end
+    # Lệnh kiểm tra xem hệ thống Render có những lệnh python nào và nằm ở đâu
+    require 'open3'
+    stdout, stderr, status = Open3.capture3("whereis python3; whereis python; echo '---'; echo $PATH")
+    
+    # Trả thẳng kết quả kiểm tra hệ thống về trình duyệt để bạn đọc
+    render json: { 
+      success: false, 
+      message: "Kết quả dò tìm Python trên Render", 
+      detail: stdout,
+      error_log: stderr
+    }
   end
 
   def create
