@@ -3,6 +3,8 @@ import sys
 import json
 import os
 
+os.environ["YOLO_CONFIG_DIR"] = "/tmp/Ultralytics"
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 model_path = os.path.join(BASE_DIR, "best.pt")

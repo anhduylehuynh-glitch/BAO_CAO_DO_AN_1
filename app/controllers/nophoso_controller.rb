@@ -35,8 +35,14 @@ class NophosoController < ApplicationController
       stdout, stderr, status = Open3.capture3("#{python_cmd} #{script_path} \"#{filepath}\"")
 
       if status.success?
-        # Parse chuỗi JSON nhận được từ script Python và trả về cho Client
-        render json: JSON.parse(stdout)
+
+        Rails.logger.info "=== PYTHON STDOUT ==="
+        Rails.logger.info stdout
+
+        json_line = stdout.lines.last
+
+        render json: JSON.parse(json_line)
+
       else
         # Ghi log lỗi của Python ra console của Render Docker để tiện debug
         Rails.logger.error "=== LỖI THỰC THI PYTHON AI ==="
