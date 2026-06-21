@@ -5,6 +5,7 @@ os.environ["YOLO_CONFIG_DIR"] = "/tmp/Ultralytics"
 import sys
 import json
 import time
+print("SCRIPT START", file=sys.stderr)
 
 # đo thời gian import
 t0 = time.time()

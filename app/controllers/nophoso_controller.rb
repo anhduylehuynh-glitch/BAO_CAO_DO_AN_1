@@ -30,9 +30,14 @@ class NophosoController < ApplicationController
       # Trên Docker, lệnh python3 luôn khả dụng toàn cục
       python_cmd = "python3" 
       script_path = Rails.root.join("ai-service", "detect.py")
+      
+      start = Time.now
 
       # Chạy script AI và hứng luồng dữ liệu bảo mật
       stdout, stderr, status = Open3.capture3("#{python_cmd} #{script_path} \"#{filepath}\"")
+
+      Rails.logger.info "PYTHON TOTAL: #{Time.now - start}s"
+
       Rails.logger.info "=== PYTHON STDERR ==="
       Rails.logger.info stderr
 
