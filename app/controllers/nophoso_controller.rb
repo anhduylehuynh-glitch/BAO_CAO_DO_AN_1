@@ -33,6 +33,11 @@ class NophosoController < ApplicationController
 
       # Chạy script AI và hứng luồng dữ liệu bảo mật
       stdout, stderr, status = Open3.capture3("#{python_cmd} #{script_path} \"#{filepath}\"")
+      Rails.logger.info "=== PYTHON STDERR ==="
+      Rails.logger.info stderr
+
+      Rails.logger.info "=== PYTHON STDOUT ==="
+      Rails.logger.info stdout
 
       if status.success?
 

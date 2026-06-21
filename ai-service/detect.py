@@ -2,23 +2,35 @@ import os
 
 os.environ["YOLO_CONFIG_DIR"] = "/tmp/Ultralytics"
 
-from ultralytics import YOLO
 import sys
 import json
 import time
 
+# đo thời gian import
+t0 = time.time()
+
+from ultralytics import YOLO
+
+print(f"IMPORT: {time.time()-t0:.2f}s", file=sys.stderr)
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 model_path = os.path.join(BASE_DIR, "best.pt")
 
-start = time.time()
+# đo thời gian load model
+t1 = time.time()
 
 model = YOLO(model_path)
 
-print(f"LOAD MODEL: {time.time() - start}", file=sys.stderr)
+print(f"LOAD MODEL: {time.time()-t1:.2f}s", file=sys.stderr)
 
 image_path = sys.argv[1]
 
+# đo thời gian predict
+t2 = time.time()
+
 results = model(image_path, verbose=False)
+
+print(f"PREDICT: {time.time()-t2:.2f}s", file=sys.stderr)
 
 boxes = results[0].boxes
 
