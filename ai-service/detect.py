@@ -1,7 +1,7 @@
 import os
 import sys
 
-# Ép hệ thống nhận diện thư mục tmp
+# Ép hệ thống nhận diện thư mục tmp để ghi cấu hình tạm
 os.environ["YOLO_CONFIG_DIR"] = "/tmp"
 os.environ["PIP_DISABLE_PIP_VERSION_CHECK"] = "1"
 
@@ -9,17 +9,21 @@ import json
 import time
 import logging
 
-# Chặn log ở mức độ hệ thống
+# Chặn hoàn toàn log thừa ở mức độ hệ thống
 logging.getLogger("ultralytics").setLevel(logging.ERROR)
 
 print("SCRIPT START", file=sys.stderr)
 
 t0 = time.time()
 from ultralytics import YOLO
-from ultralytics.utils import settings
+# Cách import SETTINGS an toàn tương thích với mọi phiên bản Ultralytics
+from ultralytics import SETTINGS
 
-# TẮT CHÍNH XÁC CÁC TÍNH NĂNG ĐỒNG BỘ/CẬP NHẬT CỦA ULTRALYTICS
-settings.update({"sync": False, "check": False, " some_other_setting": False})
+# Tắt đồng bộ cấu hình ngầm và kiểm tra cập nhật để tiết kiệm thời gian trên CPU
+try:
+    SETTINGS.update({"sync": False, "check": False})
+except Exception:
+    pass
 
 print(f"IMPORT: {time.time()-t0:.2f}s", file=sys.stderr)
 
@@ -37,7 +41,7 @@ img = Image.open(image_path)
 
 print(f"SIZE GOC: {img.width}x{img.height}", file=sys.stderr)
 
-# HẠ MẠNH kích thước ảnh thumbnail xuống để CPU không phải tính toán nhiều
+# Hạ kích thước ảnh tạm xuống để CPU Render xử lý nhanh gọn hơn
 img.thumbnail((320, 320))
 
 if img.mode == "RGBA":
@@ -50,7 +54,7 @@ print(f"SIZE SAU RESIZE: {img.width}x{img.height}", file=sys.stderr)
 
 t2 = time.time()
 
-# GIẢM ĐỘ PHÂN GIẢI NHẬN DIỆN XUỐNG 160 (Siêu nhẹ cho CPU Render Free)
+# Sử dụng độ phân giải nhận diện siêu nhẹ (160) phù hợp với cấu hình chip yếu của Render Free
 results = model(
     tmp_path,
     imgsz=160, 
