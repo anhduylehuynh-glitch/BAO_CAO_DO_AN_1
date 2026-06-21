@@ -5,7 +5,7 @@ if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
   ./bin/rails db:prepare
 fi
 
-# Chạy ngầm Flask bằng nohup để giữ tiến trình sống độc lập trên Docker Render
-nohup python3 ai-service/app.py > /tmp/flask.log 2>&1 &
+# Chạy ngầm Flask ẩn hoàn toàn ra phía sau hệ thống
+python3 ai-service/app.py > /tmp/flask.log 2>&1 &
 
 exec "$@"
