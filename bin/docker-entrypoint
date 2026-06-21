@@ -5,4 +5,7 @@ if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
   ./bin/rails db:prepare
 fi
 
+# Di chuyển vào đúng thư mục chứa script AI và khởi chạy ngầm Flask ẩn vào nền
+(cd ai-service && python3 app.py > /tmp/flask.log 2>&1 &)
+
 exec "$@"

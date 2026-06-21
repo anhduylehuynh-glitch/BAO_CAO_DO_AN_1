@@ -13,42 +13,32 @@ class NophosoController < ApplicationController
       return
     end
 
-    # Đường dẫn lưu file tạm thời để Python đọc
-    filepath = Rails.root.join("ai-service", "uploads", file.original_filename)
-
-    # Tạo thư mục tạm nếu chưa có
-    FileUtils.mkdir_p(Rails.root.join("ai-service", "uploads"))
-
-    # Ghi file ảnh vào thư mục tạm
-    File.open(filepath, "wb") do |f|
-      f.write(file.read)
-    end
-
     begin
-      require 'open3'
-      
-      python_cmd = "python3" 
-      script_path = Rails.root.join("ai-service", "detect.py")
-      
-      # Gọi thực thi script Python trực tiếp
-      stdout, stderr, status = Open3.capture3("#{python_cmd} #{script_path} \"#{filepath}\"")
+      require 'net/http'
+      require 'net/http/post/multipart'
 
-      # Xóa file ảnh gốc sau khi đã xử lý xong để giải phóng bộ nhớ đệm
-      FileUtils.rm_f(filepath)
-
-      if status.success?
-        json_line = stdout.lines.last
-        render json: JSON.parse(json_line)
-      else
-        Rails.logger.error "=== LỖI THỰC THI PYTHON AI ==="
-        Rails.logger.error stderr
-        render json: { success: false, message: "Hệ thống nhận diện thất bại", detail: stderr }, status: :internal_server_error
+      # Gọi tới API Flask đang chạy nền trên RAM
+      url = URI.parse('http://127.0.0.1:5000/predict')
+      
+      req = Net::HTTP::Post::Multipart.new(
+        url.path,
+        "file" => UploadIO.new(file.tempfile, file.content_type, file.original_filename)
+      )
+      
+      res = Net::HTTP.start(url.host, url.port, open_timeout: 3, read_timeout: 15) do |http|
+        http.request(req)
       end
 
-    rescue JSON::ParserError => e
-      render json: { success: false, message: "Định dạng dữ liệu cấu hình lỗi" }, status: :internal_server_error
-    rescue StandardError => e
-      render json: { success: false, message: "Lỗi hệ thống: #{e.message}" }, status: :internal_server_error
+      if res.code == "200"
+        render json: JSON.parse(res.body)
+      else
+        render json: { success: false, message: "Cổng dịch vụ AI phản hồi lỗi" }, status: :internal_server_error
+      end
+
+    rescue => e
+      # Nếu Flask đang khởi tạo dở dang ở vài giây đầu tiên, thông báo an toàn cho UI
+      Rails.logger.error "=== KẾT NỐI API THẤT BẠI: #{e.message} ==="
+      render json: { success: false, message: "Hệ thống AI đang khởi động, vui lòng thử lại sau vài giây!" }
     end
   end
 
