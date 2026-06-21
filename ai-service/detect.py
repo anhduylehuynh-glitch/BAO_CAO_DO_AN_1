@@ -1,7 +1,9 @@
 import os
 import sys
 
-# Ép hệ thống nhận diện thư mục tmp để ghi cấu hình tạm
+# BẬT CACHE BIÊN DỊCH: Ép Python lưu và đọc file cấu trúc .pyc từ thư mục /tmp
+os.environ["PYTHONPYCACHEPREFIX"] = "/tmp/pycache"
+# Tối ưu hóa biến môi trường YOLO
 os.environ["YOLO_CONFIG_DIR"] = "/tmp"
 os.environ["PIP_DISABLE_PIP_VERSION_CHECK"] = "1"
 
