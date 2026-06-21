@@ -69,3 +69,5 @@ group :test do
 
 end
 gem "resend"
+
+gem 'multipart-post'

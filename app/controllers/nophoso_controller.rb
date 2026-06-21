@@ -13,68 +13,34 @@ class NophosoController < ApplicationController
       return
     end
 
-    # Đường dẫn lưu file tạm thời để Python đọc
-    filepath = Rails.root.join("ai-service", "uploads", file.original_filename)
-
-    # Tạo thư mục tạm nếu chưa có
-    FileUtils.mkdir_p(Rails.root.join("ai-service", "uploads"))
-
-    # Ghi file ảnh vào thư mục tạm
-    File.open(filepath, "wb") do |f|
-      f.write(file.read)
-    end
-
     begin
-      require 'open3'
+      # Sử dụng thư viện HTTP chuẩn của Ruby để gọi sang API Flask
+      require 'net/http'
+      require 'net/http/post/multipart' # Đảm bảo đã thêm gem 'multipart-post' vào Gemfile
+
+      url = URI.parse('http://127.0.0.1:5000/predict')
       
-      # Trên Docker, lệnh python3 luôn khả dụng toàn cục
-      python_cmd = "python3" 
-      script_path = Rails.root.join("ai-service", "detect.py")
+      # Đóng gói ảnh gửi trực tiếp qua luồng mạng nội bộ
+      req = Net::HTTP::Post::Multipart.new(
+        url.path,
+        "file" => UploadIO.new(file.tempfile, file.content_type, file.original_filename)
+      )
       
-      start = Time.now
-
-      # Chạy script AI và hứng luồng dữ liệu bảo mật
-      stdout, stderr, status = Open3.capture3("#{python_cmd} #{script_path} \"#{filepath}\"")
-
-      Rails.logger.info "PYTHON TOTAL: #{Time.now - start}s"
-
-      Rails.logger.info "=== PYTHON STDERR ==="
-      Rails.logger.info stderr
-
-      Rails.logger.info "=== PYTHON STDOUT ==="
-      Rails.logger.info stdout
-
-      if status.success?
-
-        Rails.logger.info "=== PYTHON STDOUT ==="
-        Rails.logger.info stdout
-
-        # Lọc tìm chính xác dòng chứa kết quả JSON (bắt đầu bằng { và kết thúc bằng })
-        # Tránh việc các dòng cảnh báo hệ thống của hệ điều hành/đọc ghi file chen vào làm lỗi parse
-        json_line = stdout.lines.map(&:strip).find { |line| line.start_with?("{") && line.end_with?("}") }
-
-        if json_line
-          render json: JSON.parse(json_line)
-        else
-          Rails.logger.error "=== LỖI: KHÔNG TÌM THẤY CHUỖI JSON ==="
-          render json: { success: false, message: "Mô hình AI không trả về kết quả hợp lệ", raw: stdout }, status: :internal_server_error
-        end
-
-      else
-        # Ghi log lỗi của Python ra console của Render Docker để tiện debug
-        Rails.logger.error "=== LỖI THỰC THI PYTHON AI ==="
-        Rails.logger.error stderr
-        render json: { success: false, message: "Lỗi thực thi AI trên Docker", detail: stderr }, status: :internal_server_error
+      # Thực hiện gọi API
+      res = Net::HTTP.start(url.host, url.port) do |http|
+        http.request(req)
       end
 
-    rescue JSON::ParserError => e
-      Rails.logger.error "=== LỖI PARSE JSON TỪ PYTHON ==="
-      Rails.logger.error "Dữ liệu thô nhận được: #{stdout}"
-      render json: { success: false, message: "Định dạng kết quả AI không hợp lệ", raw: stdout }, status: :internal_server_error
-    rescue StandardError => e
-      Rails.logger.error "=== LỖI HỆ THỐNG CONTROLLER ==="
-      Rails.logger.error e.message
-      render json: { success: false, message: "Lỗi hệ thống: #{e.message}" }, status: :internal_server_error
+      if res.code == "200"
+        # Trả kết quả JSON trực tiếp về cho Giao diện frontend
+        render json: JSON.parse(res.body)
+      else
+        render json: { success: false, message: "Lỗi phản hồi từ cổng dịch vụ AI" }, status: :internal_server_error
+      end
+
+    rescue => e
+      Rails.logger.error "=== LỖI KẾT NỐI API AI NỘI BỘ: #{e.message} ==="
+      render json: { success: false, message: "Không thể kết nối đến hệ thống nhận diện AI: #{e.message}" }, status: :internal_server_error
     end
   end
 
