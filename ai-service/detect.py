@@ -30,6 +30,7 @@ from PIL import Image
 
 img = Image.open(image_path)
 
+
 print(
     f"SIZE GOC: {img.width}x{img.height}",
     file=sys.stderr
@@ -40,7 +41,13 @@ img.thumbnail((640, 640))
 
 tmp_path = image_path + "_small.jpg"
 
-img.save(tmp_path)
+# chuyển RGBA -> RGB
+if img.mode == "RGBA":
+    img = img.convert("RGB")
+
+tmp_path = image_path + "_small.jpg"
+
+img.save(tmp_path, "JPEG")
 
 print(
     f"SIZE SAU RESIZE: {img.width}x{img.height}",
