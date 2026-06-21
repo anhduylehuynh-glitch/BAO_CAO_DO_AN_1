@@ -13,31 +13,42 @@ class NophosoController < ApplicationController
       return
     end
 
+    # Đường dẫn lưu file tạm thời để Python đọc
+    filepath = Rails.root.join("ai-service", "uploads", file.original_filename)
+
+    # Tạo thư mục tạm nếu chưa có
+    FileUtils.mkdir_p(Rails.root.join("ai-service", "uploads"))
+
+    # Ghi file ảnh vào thư mục tạm
+    File.open(filepath, "wb") do |f|
+      f.write(file.read)
+    end
+
     begin
-      require 'net/http'
-      require 'net/http/post/multipart'
-
-      url = URI.parse('http://127.0.0.1:5000/predict')
+      require 'open3'
       
-      req = Net::HTTP::Post::Multipart.new(
-        url.path,
-        "file" => UploadIO.new(file.tempfile, file.content_type, file.original_filename)
-      )
+      python_cmd = "python3" 
+      script_path = Rails.root.join("ai-service", "detect.py")
       
-      # Thiết lập thời gian chờ tối đa ngắn để tránh treo giao diện
-      res = Net::HTTP.start(url.host, url.port, open_timeout: 5, read_timeout: 30) do |http|
-        http.request(req)
-      end
+      # Gọi thực thi script Python trực tiếp
+      stdout, stderr, status = Open3.capture3("#{python_cmd} #{script_path} \"#{filepath}\"")
 
-      if res.code == "200"
-        render json: JSON.parse(res.body)
+      # Xóa file ảnh gốc sau khi đã xử lý xong để giải phóng bộ nhớ đệm
+      FileUtils.rm_f(filepath)
+
+      if status.success?
+        json_line = stdout.lines.last
+        render json: JSON.parse(json_line)
       else
-        render json: { success: false, message: "Cổng dịch vụ AI phản hồi lỗi" }, status: :internal_server_error
+        Rails.logger.error "=== LỖI THỰC THI PYTHON AI ==="
+        Rails.logger.error stderr
+        render json: { success: false, message: "Hệ thống nhận diện thất bại", detail: stderr }, status: :internal_server_error
       end
 
-    rescue => e
-      Rails.logger.error "=== LỖI KẾT NỐI API AI: #{e.message} ==="
-      render json: { success: false, message: "Hệ thống AI đang khởi động, vui lòng thử lại sau vài giây!" }, status: :internal_server_error
+    rescue JSON::ParserError => e
+      render json: { success: false, message: "Định dạng dữ liệu cấu hình lỗi" }, status: :internal_server_error
+    rescue StandardError => e
+      render json: { success: false, message: "Lỗi hệ thống: #{e.message}" }, status: :internal_server_error
     end
   end
 
