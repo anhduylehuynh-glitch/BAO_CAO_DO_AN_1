@@ -26,11 +26,36 @@ print(f"LOAD MODEL: {time.time()-t1:.2f}s", file=sys.stderr)
 
 image_path = sys.argv[1]
 
+from PIL import Image
+
+img = Image.open(image_path)
+
+print(
+    f"SIZE GOC: {img.width}x{img.height}",
+    file=sys.stderr
+)
+
+# Resize ảnh trước khi predict
+img.thumbnail((640, 640))
+
+tmp_path = image_path + "_small.jpg"
+
+img.save(tmp_path)
+
+print(
+    f"SIZE SAU RESIZE: {img.width}x{img.height}",
+    file=sys.stderr
+)
+
 # đo thời gian predict
 t2 = time.time()
 
-results = model(image_path, verbose=False)
-
+results = model(
+    tmp_path,
+    imgsz=320,
+    conf=0.5,
+    verbose=False
+)
 print(f"PREDICT: {time.time()-t2:.2f}s", file=sys.stderr)
 
 boxes = results[0].boxes
