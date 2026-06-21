@@ -42,16 +42,16 @@ class NophosoController < ApplicationController
       Rails.logger.info stdout
 
       if status.success?
-        # Tìm chính xác dòng chứa kết quả dạng JSON {"success":...}
+        # Tìm chính xác dòng nào chứa ký tự đầu và cuối là cặp ngoặc nhọn {} của JSON
         json_line = stdout.lines.map(&:strip).find { |line| line.start_with?("{") && line.end_with?("}") }
 
         if json_line
           render json: JSON.parse(json_line)
         else
-          render json: { success: false, message: "Không tìm thấy dữ liệu kết quả từ mô hình AI" }, status: :internal_server_error
+          render json: { success: false, message: "Không tìm thấy chuỗi kết quả JSON hợp lệ" }, status: :internal_server_error
         end
       else
-        render json: { success: false, message: "Lỗi xử lý hệ thống AI", detail: stderr }, status: :internal_server_error
+        render json: { success: false, message: "Lỗi thực thi AI trên Docker", detail: stderr }, status: :internal_server_error
       end
 
     rescue JSON::ParserError => e
