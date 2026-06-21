@@ -49,9 +49,16 @@ class NophosoController < ApplicationController
         Rails.logger.info "=== PYTHON STDOUT ==="
         Rails.logger.info stdout
 
-        json_line = stdout.lines.last
+        # Lọc tìm chính xác dòng chứa kết quả JSON (bắt đầu bằng { và kết thúc bằng })
+        # Tránh việc các dòng cảnh báo hệ thống của hệ điều hành/đọc ghi file chen vào làm lỗi parse
+        json_line = stdout.lines.map(&:strip).find { |line| line.start_with?("{") && line.end_with?("}") }
 
-        render json: JSON.parse(json_line)
+        if json_line
+          render json: JSON.parse(json_line)
+        else
+          Rails.logger.error "=== LỖI: KHÔNG TÌM THẤY CHUỖI JSON ==="
+          render json: { success: false, message: "Mô hình AI không trả về kết quả hợp lệ", raw: stdout }, status: :internal_server_error
+        end
 
       else
         # Ghi log lỗi của Python ra console của Render Docker để tiện debug
