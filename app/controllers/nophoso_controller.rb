@@ -13,34 +13,55 @@ class NophosoController < ApplicationController
       return
     end
 
+    # Đường dẫn lưu file tạm thời để Python đọc
+    filepath = Rails.root.join("ai-service", "uploads", file.original_filename)
+
+    # Tạo thư mục tạm nếu chưa có
+    FileUtils.mkdir_p(Rails.root.join("ai-service", "uploads"))
+
+    # Ghi file ảnh vào thư mục tạm
+    File.open(filepath, "wb") do |f|
+      f.write(file.read)
+    end
+
     begin
-      # Sử dụng thư viện HTTP chuẩn của Ruby để gọi sang API Flask
-      require 'net/http'
-      require 'net/http/post/multipart' # Đảm bảo đã thêm gem 'multipart-post' vào Gemfile
-
-      url = URI.parse('http://127.0.0.1:5000/predict')
+      require 'open3'
       
-      # Đóng gói ảnh gửi trực tiếp qua luồng mạng nội bộ
-      req = Net::HTTP::Post::Multipart.new(
-        url.path,
-        "file" => UploadIO.new(file.tempfile, file.content_type, file.original_filename)
-      )
+      python_cmd = "python3"
+      script_path = Rails.root.join("ai-service", "detect.py")
       
-      # Thực hiện gọi API
-      res = Net::HTTP.start(url.host, url.port) do |http|
-        http.request(req)
-      end
+      start = Time.now
 
-      if res.code == "200"
-        # Trả kết quả JSON trực tiếp về cho Giao diện frontend
-        render json: JSON.parse(res.body)
+      # Chạy tiến trình gọi trực tiếp file script độc lập
+      stdout, stderr, status = Open3.capture3("#{python_cmd} #{script_path} \"#{filepath}\"")
+
+      Rails.logger.info "PYTHON TOTAL: #{Time.now - start}s"
+      Rails.logger.info "=== PYTHON STDERR ==="
+      Rails.logger.info stderr
+      Rails.logger.info "=== PYTHON STDOUT ==="
+      Rails.logger.info stdout
+
+      if status.success?
+        # Tìm chính xác dòng chứa kết quả dạng JSON {"success":...}
+        json_line = stdout.lines.map(&:strip).find { |line| line.start_with?("{") && line.end_with?("}") }
+
+        if json_line
+          render json: JSON.parse(json_line)
+        else
+          render json: { success: false, message: "Không tìm thấy dữ liệu kết quả từ mô hình AI" }, status: :internal_server_error
+        end
       else
-        render json: { success: false, message: "Lỗi phản hồi từ cổng dịch vụ AI" }, status: :internal_server_error
+        render json: { success: false, message: "Lỗi xử lý hệ thống AI", detail: stderr }, status: :internal_server_error
       end
 
-    rescue => e
-      Rails.logger.error "=== LỖI KẾT NỐI API AI NỘI BỘ: #{e.message} ==="
-      render json: { success: false, message: "Không thể kết nối đến hệ thống nhận diện AI: #{e.message}" }, status: :internal_server_error
+    rescue JSON::ParserError => e
+      render json: { success: false, message: "Lỗi định dạng chuỗi dữ liệu", raw: stdout }, status: :internal_server_error
+    rescue StandardError => e
+      render json: { success: false, message: "Lỗi hệ thống: #{e.message}" }, status: :internal_server_error
+    ensure
+      # Dọn dẹp file tạm trên Docker sau khi phân tích xong để tránh đầy dung lượng đĩa cứng
+      FileUtils.rm_f(filepath)
+      FileUtils.rm_f("#{filepath}_small.jpg")
     end
   end
 

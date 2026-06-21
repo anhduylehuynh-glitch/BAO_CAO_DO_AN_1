@@ -1,30 +1,28 @@
 import os
 import sys
 
-# BẬT CACHE BIÊN DỊCH: Ép Python lưu và đọc file cấu trúc .pyc từ thư mục /tmp
-os.environ["PYTHONPYCACHEPREFIX"] = "/tmp/pycache"
-# Tối ưu hóa biến môi trường YOLO
+# Ép hệ thống lưu cấu hình và cache biên dịch vào thư mục tmp cho phép ghi của Render
 os.environ["YOLO_CONFIG_DIR"] = "/tmp"
 os.environ["PIP_DISABLE_PIP_VERSION_CHECK"] = "1"
+os.environ["PYTHONPYCACHEPREFIX"] = "/tmp/pycache"
 
 import json
 import time
 import logging
 
-# Chặn hoàn toàn log thừa ở mức độ hệ thống
+# Chặn hoàn toàn log thừa tránh làm tràn bộ nhớ đệm STDOUT
 logging.getLogger("ultralytics").setLevel(logging.ERROR)
 
 print("SCRIPT START", file=sys.stderr)
 
 t0 = time.time()
 from ultralytics import YOLO
-# Cách import SETTINGS an toàn tương thích với mọi phiên bản Ultralytics
 from ultralytics import SETTINGS
 
-# Tắt đồng bộ cấu hình ngầm và kiểm tra cập nhật để tiết kiệm thời gian trên CPU
+# Tắt đồng bộ hóa cấu hình trực tuyến và tính năng check update tự động
 try:
     SETTINGS.update({"sync": False, "check": False})
-except Exception:
+except:
     pass
 
 print(f"IMPORT: {time.time()-t0:.2f}s", file=sys.stderr)
@@ -40,26 +38,23 @@ image_path = sys.argv[1]
 
 from PIL import Image
 img = Image.open(image_path)
-
 print(f"SIZE GOC: {img.width}x{img.height}", file=sys.stderr)
 
-# Hạ kích thước ảnh tạm xuống để CPU Render xử lý nhanh gọn hơn
-img.thumbnail((320, 320))
+# Hạ độ phân giải ảnh đầu vào xuống mức cực thấp để CPU Render tính toán nhanh gọn
+img.thumbnail((160, 160))
 
 if img.mode == "RGBA":
     img = img.convert("RGB")
 
 tmp_path = image_path + "_small.jpg"
 img.save(tmp_path, "JPEG")
-
 print(f"SIZE SAU RESIZE: {img.width}x{img.height}", file=sys.stderr)
 
 t2 = time.time()
-
-# Sử dụng độ phân giải nhận diện siêu nhẹ (160) phù hợp với cấu hình chip yếu của Render Free
+# imgsz=160 giúp mô hình chạy siêu tốc trên CPU yếu gói Free
 results = model(
     tmp_path,
-    imgsz=160, 
+    imgsz=160,
     conf=0.4,
     verbose=False
 )

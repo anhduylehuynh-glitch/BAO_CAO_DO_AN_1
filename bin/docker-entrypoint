@@ -1,13 +1,8 @@
 #!/bin/bash
 set -e
 
-# If running the rails server then create or migrate existing database
 if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
   ./bin/rails db:prepare
 fi
 
-# 1. KHỞI CHẠY API PYTHON NGẦM (&) TRƯỚC KHI BÀN GIAO TIẾN TRÌNH
-python3 ai-service/app.py &
-
-# 2. BÀN GIAO QUYỀN KHỞI CHẠY LẠI CHO TIẾN TRÌNH CHÍNH (PUMA) CỦA DOCKER
 exec "$@"
