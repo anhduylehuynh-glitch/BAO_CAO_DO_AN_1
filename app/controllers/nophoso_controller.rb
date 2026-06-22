@@ -14,31 +14,32 @@ class NophosoController < ApplicationController
     end
 
     begin
-      require 'net/http'
-      require 'net/http/post/multipart'
+      require 'open3'
 
-      # Gọi tới API Flask đang chạy nền trên RAM
-      url = URI.parse('http://127.0.0.1:5000/predict')
-      
-      req = Net::HTTP::Post::Multipart.new(
-        url.path,
-        "file" => UploadIO.new(file.tempfile, file.content_type, file.original_filename)
-      )
-      
-      res = Net::HTTP.start(url.host, url.port, open_timeout: 3, read_timeout: 15) do |http|
-        http.request(req)
-      end
+      # Định nghĩa đường dẫn tuyệt đối đến file ảnh tạm và file detect.py
+      image_path = file.tempfile.path
+      script_path = Rails.root.join('ai-service', 'detect.py').to_s
 
-      if res.code == "200"
-        render json: JSON.parse(res.body)
+      # Chạy tiến trình gọi Python trực tiếp
+      stdout, stderr, status = Open3.capture3("python3 #{script_path} #{image_path}")
+
+      if status.success?
+        # Tìm chuỗi JSON trong kết quả đầu ra
+        json_start = stdout.index('{')
+        if json_start
+          clean_json = stdout[json_start..-1]
+          render json: JSON.parse(clean_json)
+        else
+          render json: { success: false, message: "Định dạng phản hồi từ AI không hợp lệ" }
+        end
       else
-        render json: { success: false, message: "Cổng dịch vụ AI phản hồi lỗi" }, status: :internal_server_error
+        Rails.logger.error "=== AI SCRIPT ERROR: #{stderr} ==="
+        render json: { success: false, message: "Không thể xử lý nhận diện ảnh" }
       end
 
     rescue => e
-      # Nếu Flask đang khởi tạo dở dang ở vài giây đầu tiên, thông báo an toàn cho UI
-      Rails.logger.error "=== KẾT NỐI API THẤT BẠI: #{e.message} ==="
-      render json: { success: false, message: "Hệ thống AI đang khởi động, vui lòng thử lại sau vài giây!" }
+      Rails.logger.error "=== HỆ THỐNG XỬ LÝ LỖI: #{e.message} ==="
+      render json: { success: false, message: "Hệ thống trục trặc, vui lòng thử lại sau!" }
     end
   end
 
