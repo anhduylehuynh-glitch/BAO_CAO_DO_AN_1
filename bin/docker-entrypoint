@@ -5,7 +5,11 @@ if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
   ./bin/rails db:prepare
 fi
 
-# Di chuyển vào đúng thư mục chứa script AI và khởi chạy ngầm Flask ẩn vào nền
-(cd ai-service && python3 app.py > /tmp/flask.log 2>&1 &)
+# Di chuyển hẳn vào thư mục chứa API AI rồi khởi chạy ngầm Flask
+cd /workspaces/BAO_CAO_DO_AN_1/tuvantuyensinh/ai-service || cd ./ai-service || true
+python3 app.py > /tmp/flask_service.log 2>&1 &
+
+# Trở lại thư mục gốc của Rails để chạy Puma server tiếp tục
+cd /workspaces/BAO_CAO_DO_AN_1/tuvantuyensinh || cd .. || true
 
 exec "$@"
