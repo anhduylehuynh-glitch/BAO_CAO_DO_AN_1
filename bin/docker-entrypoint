@@ -5,12 +5,9 @@ if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
   ./bin/rails db:prepare
 fi
 
-echo "=== KIỂM TRA VÀ CÀI ĐẶT THƯ VIỆN PYTHON ==="
-# Cài đặt flask và Pillow trực tiếp vào môi trường container
-python3 -m pip install --no-cache-dir flask Pillow
-
 echo "=== ĐANG KHỞI ĐỘNG DỊCH VỤ NỀN FLASK AI PORT 5000 ==="
-# Chuyển vào thư mục ai-service và tiến hành chạy ngầm
+
+# Chuyển vào thư mục dịch vụ AI và tiến hành chạy ngầm
 cd ai-service
 python3 app.py > /tmp/flask_service.log 2>&1 &
 cd ..
