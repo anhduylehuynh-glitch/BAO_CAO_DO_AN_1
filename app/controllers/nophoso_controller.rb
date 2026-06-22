@@ -14,32 +14,31 @@ class NophosoController < ApplicationController
     end
 
     begin
-      require 'open3'
+      require 'net/http'
+      require 'net/http/post/multipart'
 
-      # Định nghĩa đường dẫn tuyệt đối đến file ảnh tạm và file detect.py
-      image_path = file.tempfile.path
-      script_path = Rails.root.join('ai-service', 'detect.py').to_s
+      # Gọi tới API Flask chạy nền nội bộ (sử dụng localhost để tối ưu tuyến đường)
+      url = URI.parse('http://127.0.0.1:5000/predict')
+      
+      req = Net::HTTP::Post::Multipart.new(
+        url.path,
+        "file" => UploadIO.new(file.tempfile, file.content_type, file.original_filename)
+      )
+      
+      # Tăng thời gian chờ lên để an toàn trên CPU Render Free
+      res = Net::HTTP.start(url.host, url.port, open_timeout: 5, read_timeout: 30) do |http|
+        http.request(req)
+      end
 
-      # Chạy tiến trình gọi Python trực tiếp
-      stdout, stderr, status = Open3.capture3("python3 #{script_path} #{image_path}")
-
-      if status.success?
-        # Tìm chuỗi JSON trong kết quả đầu ra
-        json_start = stdout.index('{')
-        if json_start
-          clean_json = stdout[json_start..-1]
-          render json: JSON.parse(clean_json)
-        else
-          render json: { success: false, message: "Định dạng phản hồi từ AI không hợp lệ" }
-        end
+      if res.code == "200"
+        render json: JSON.parse(res.body)
       else
-        Rails.logger.error "=== AI SCRIPT ERROR: #{stderr} ==="
-        render json: { success: false, message: "Không thể xử lý nhận diện ảnh" }
+        render json: { success: false, message: "Cổng dịch vụ AI phản hồi lỗi" }
       end
 
     rescue => e
-      Rails.logger.error "=== HỆ THỐNG XỬ LÝ LỖI: #{e.message} ==="
-      render json: { success: false, message: "Hệ thống trục trặc, vui lòng thử lại sau!" }
+      Rails.logger.error "=== KẾT NỐI API THẤT BẠI: #{e.message} ==="
+      render json: { success: false, message: "Hệ thống AI đang khởi động hoặc quá tải, vui lòng thử lại sau vài giây!" }
     end
   end
 

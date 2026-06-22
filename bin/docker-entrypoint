@@ -5,4 +5,18 @@ if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
   ./bin/rails db:prepare
 fi
 
+echo "=== ĐANG KHỞI ĐỘNG DỊCH VỤ NỀN FLASK AI PORT 5000 ==="
+
+# Chuyển vào thư mục dịch vụ AI và tiến hành chạy ngầm
+cd ai-service
+python3 app.py > /tmp/flask_service.log 2>&1 &
+cd ..
+
+# Nghỉ 4 giây để đảm bảo YOLO nạp xong file trọng số vào RAM
+sleep 4
+
+echo "=== TRẠNG THÁI KHỞI ĐỘNG CỦA FLASK AI ==="
+cat /tmp/flask_service.log || echo "Chưa có file log tạo ra"
+echo "========================================="
+
 exec "$@"
