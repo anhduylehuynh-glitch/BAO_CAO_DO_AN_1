@@ -1,15 +1,26 @@
 #!/bin/bash
 set -e
 
+# Chuẩn bị database nếu là môi trường Rails server
 if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
   ./bin/rails db:prepare
 fi
 
-# Di chuyển hẳn vào thư mục chứa API AI rồi khởi chạy ngầm Flask
-cd /workspaces/BAO_CAO_DO_AN_1/tuvantuyensinh/ai-service || cd ./ai-service || true
-python3 app.py > /tmp/flask_service.log 2>&1 &
+# =================================///////////////////////////
+# 1. ĐẶT LỆNH KHỞI CHẠY FLASK LÊN TRƯỚC EXEC NHA BẠN!
+# =================================///////////////////////////
+echo "=== ĐANG KHỞI ĐỘNG DỊCH VỤ NỀN FLASK AI PORT 5000 ==="
+python3 ai-service/app.py > /tmp/flask_service.log 2>&1 &
 
-# Trở lại thư mục gốc của Rails để chạy Puma server tiếp tục
-cd /workspaces/BAO_CAO_DO_AN_1/tuvantuyensinh || cd .. || true
+# Đợi 2 giây xem Flask có lỗi cú pháp gì không
+sleep 2
 
+# Đọc log nhanh của Flask ra console của Render để bạn dễ theo dõi
+echo "=== LOG SƠ BỘ FLASK ==="
+cat /tmp/flask_service.log || true
+echo "======================="
+
+# =================================///////////////////////////
+# 2. LỆNH EXEC PHẢI LUÔN LÀ DÒNG CUỐI CÙNG CỦA FILE ENTRYPOINT
+# =================================///////////////////////////
 exec "$@"
