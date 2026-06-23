@@ -6,56 +6,57 @@ class NophosoController < ApplicationController
   end
 
   def xac_thuc_cccd
-    begin
-      require 'net/http'
-      require 'net/http/post/multipart'
+  begin
+    require 'net/http'
+    require 'net/http/post/multipart'
 
-      # Lấy URL dịch vụ AI từ biến môi trường (Ưu tiên kết nối nội bộ Render)
-      url_string = ENV['AI_SERVICE_URL'] || 'http://127.0.0.1:5000/predict'
-      url = URI.parse(url_string)
+    url_string = ENV['AI_SERVICE_URL'] || 'http://127.0.0.1:5000/predict'
+    url = URI.parse(url_string)
 
-      # Kiểm tra xem file upload từ client có tồn tại không
-      if params[:filecccdt].nil?
-        return render json: { success: false, message: "Không tìm thấy file CCCD được tải lên!" }
-      end
+    if params[:filecccdt].nil?
+      return render json: { success: false, message: "Không tìm thấy file CCCD được tải lên!" }
+    end
 
-      # Chuẩn bị file để gửi Multipart sang Flask AI Service
-      file_payload = params[:filecccdt]
+    file_payload = params[:filecccdt]
+    
+    req = Net::HTTP::Post::Multipart.new(
+      url.path.empty? ? "/predict" : url.path,
+      "file" => UploadIO.new(file_payload.tempfile, file_payload.content_type, file_payload.original_filename)
+    )
+
+    # Thiết lập thời gian chờ thoải mái cho AI xử lý ảnh nặng
+    res = Net::HTTP.start(url.host, url.port, use_ssl: (url.scheme == 'https'), open_timeout: 10, read_timeout: 60) do |http|
+      http.request(req)
+    end
+
+    # SỬA TẠI ĐÂY: Dùng kiểm tra class hoặc mã code chuẩn của Ruby Net::HTTP
+    if res.is_a?(Net::HTTPSuccess)
+      render json: JSON.parse(res.body)
+    else
+      # In ra chính xác lỗi mà phía Python trả về để dễ debug
+      Rails.logger.error "================= FLASK AI SERVICE ERROR ================="
+      Rails.logger.error "Mã lỗi HTTP: #{res.code}"
+      Rails.logger.error "Nội dung phản hồi từ AI: #{res.body}"
+      Rails.logger.error "=========================================================="
       
-      # Tạo request POST Multipart
-      req = Net::HTTP::Post::Multipart.new(
-        url.path.empty? ? "/predict" : url.path,
-        "file" => UploadIO.new(file_payload.tempfile, file_payload.content_type, file_payload.original_filename)
-      )
-
-      # Thiết lập kết nối với timeouts mở rộng để tránh lỗi ngắt kết nối 30s của Render
-      res = Net::HTTP.start(url.host, url.port, use_ssl: (url.scheme == 'https'), open_timeout: 10, read_timeout: 60) do |http|
-        http.request(req)
-      end
-
-      # Kiểm tra kết quả phản hồi từ Flask AI Service
-      if res.is_status_code? || res.code.to_i == 200
-        # Trả về kết quả JSON nhận được từ AI trực tiếp về cho phía Frontend xử lý
-        render json: JSON.parse(res.body)
-      else
-        Rails.logger.error "Flask AI Service phản hồi lỗi với Code: #{res.code} - Body: #{res.body}"
-        render json: { success: false, message: "Dịch vụ AI phản hồi mã lỗi không mong muốn (#{res.code})." }
-      end
-
-    rescue => e
-      # Ghi log chi tiết ra hệ thống để debug trên Render Dashboard khi cần
-      Rails.logger.error "================= LỖI XÁC THỰC CCCD ================="
-      Rails.logger.error "Chi tiết lỗi: #{e.message}"
-      Rails.logger.error e.backtrace.first(10).join("\n")
-      Rails.logger.error "====================================================="
-
-      # Phản hồi lỗi thân thiện về giao diện
       render json: { 
         success: false, 
-        message: "Hệ thống kết nối AI đang bận hoặc đang khởi động. Vui lòng thử lại sau ít phút!" 
+        message: "Dịch vụ AI gặp lỗi xử lý bên trong hệ thống (Mã lỗi: #{res.code})." 
       }
     end
+
+  rescue => e
+    Rails.logger.error "================= LỖI XÁC THỰC CCCD ================="
+    Rails.logger.error "Chi tiết lỗi: #{e.message}"
+    Rails.logger.error e.backtrace.first(10).join("\n")
+    Rails.logger.error "====================================================="
+
+    render json: { 
+      success: false, 
+      message: "Hệ thống kết nối AI gặp sự cố không mong muốn. Vui lòng kiểm tra log!" 
+    }
   end
+end
 
   def create
 
