@@ -5,58 +5,7 @@ class NophosoController < ApplicationController
      @nganhs = Nganh.all
   end
 
-  def xac_thuc_cccd
-    begin
-      require 'net/http'
-      require 'net/http/post/multipart'
-
-      url_string = ENV['AI_SERVICE_URL'] || 'http://127.0.0.1:5000/predict'
-      url = URI.parse(url_string)
-
-      if params[:filecccdt].nil?
-        return render json: { success: false, message: "Không tìm thấy file CCCD được tải lên!" }
-      end
-
-      file_payload = params[:filecccdt]
-      
-      req = Net::HTTP::Post::Multipart.new(
-        url.path.empty? ? "/predict" : url.path,
-        # ĐÃ SỬA: Đổi tên key từ "file" thành "filecccdt" để đồng bộ tuyệt đối với Flask AI
-        "filecccdt" => UploadIO.new(file_payload.tempfile, file_payload.content_type, file_payload.original_filename)
-      )
-
-      # Thiết lập thời gian chờ thoải mái cho AI xử lý ảnh nặng
-      res = Net::HTTP.start(url.host, url.port, use_ssl: (url.scheme == 'https'), open_timeout: 10, read_timeout: 180) do |http|
-        http.request(req)
-      end
-
-      if res.is_a?(Net::HTTPSuccess)
-        render json: JSON.parse(res.body)
-      else
-        # In ra chính xác lỗi mà phía Python trả về để dễ debug
-        Rails.logger.error "================= FLASK AI SERVICE ERROR ================="
-        Rails.logger.error "Mã lỗi HTTP: #{res.code}"
-        Rails.logger.error "Nội dung phản hồi từ AI: #{res.body}"
-        Rails.logger.error "=========================================================="
-        
-        render json: { 
-          success: false, 
-          message: "Dịch vụ AI gặp lỗi xử lý bên trong hệ thống (Mã lỗi: #{res.code})." 
-        }
-      end
-
-    rescue => e
-      Rails.logger.error "================= LỖI XÁC THỰC CCCD ================="
-      Rails.logger.error "Chi tiết lỗi: #{e.message}"
-      Rails.logger.error e.backtrace.first(10).join("\n")
-      Rails.logger.error "====================================================="
-
-      render json: { 
-        success: false, 
-        message: "Hệ thống kết nối AI gặp sự cố không mong muốn. Vui lòng kiểm tra log!" 
-      }
-    end
-  end
+  
 
   def create
 

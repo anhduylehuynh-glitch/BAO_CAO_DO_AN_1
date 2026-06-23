@@ -678,23 +678,18 @@
 
 
     // tiếp tục
+    // tiếp tục
+    // tiếp tục
     async function buocTiepTheo(){
+        // Vẫn giữ lại hàm kiểm tra xem thí sinh đã điền đủ thông tin/chọn file hay chưa
         if (!kiemTraBuoc()) return;
 
-        // nếu đang ở bước 1 thì kiểm tra CCCD
-        if (buocht === 0) {
-
-            let hopLe = await docCCCD();
-
-            if (!hopLe) return; 
-        }
-
+        // Chỉ cần kiểm tra hợp lệ của form xong là cho phép chuyển bước luôn
         if(buocht < danhSachForm.length - 1){
             buocht++;
             hienThiBuoc(buocht);
         }
     }
-
 
     // quay lại
     function buocTruoc(){
