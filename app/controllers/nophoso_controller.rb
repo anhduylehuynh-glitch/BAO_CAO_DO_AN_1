@@ -6,45 +6,54 @@ class NophosoController < ApplicationController
   end
 
   def xac_thuc_cccd
-    file = params[:filecccdt]
-
-    if file.nil?
-      render json: { success: false, message: "Không có file" }
-      return
-    end
-
     begin
       require 'net/http'
       require 'net/http/post/multipart'
 
-      # =======================================================================
-      # ĐỌC URL DỊCH VỤ AI TỪ BIẾN MÔI TRƯỜNG RENDER (Cấu hình AI_SERVICE_URL)
-      # Nếu chưa cấu hình trên Render, hệ thống sẽ tự động dùng link localhost mặc định
-      # =======================================================================
+      # Lấy URL dịch vụ AI từ biến môi trường (Ưu tiên kết nối nội bộ Render)
       url_string = ENV['AI_SERVICE_URL'] || 'http://127.0.0.1:5000/predict'
       url = URI.parse(url_string)
+
+      # Kiểm tra xem file upload từ client có tồn tại không
+      if params[:filecccdt].nil?
+        return render json: { success: false, message: "Không tìm thấy file CCCD được tải lên!" }
+      end
+
+      # Chuẩn bị file để gửi Multipart sang Flask AI Service
+      file_payload = params[:filecccdt]
       
+      # Tạo request POST Multipart
       req = Net::HTTP::Post::Multipart.new(
-        url.path,
-        "file" => UploadIO.new(file.tempfile, file.content_type, file.original_filename)
+        url.path.empty? ? "/predict" : url.path,
+        "file" => UploadIO.new(file_payload.tempfile, file_payload.content_type, file_payload.original_filename)
       )
-      
-      # Tự động kích hoạt kết nối bảo mật use_ssl nếu URL nhận được là giao thức HTTPS (Render mặc định dùng HTTPS)
-      # Tăng read_timeout lên 30 giây để tránh bị ngắt kết nối khi Render gói Free xử lý chậm
-      res = Net::HTTP.start(url.host, url.port, use_ssl: (url.scheme == 'https'), open_timeout: 5, read_timeout: 60) do |http|
+
+      # Thiết lập kết nối với timeouts mở rộng để tránh lỗi ngắt kết nối 30s của Render
+      res = Net::HTTP.start(url.host, url.port, use_ssl: (url.scheme == 'https'), open_timeout: 10, read_timeout: 60) do |http|
         http.request(req)
       end
 
-      if res.code == "200"
+      # Kiểm tra kết quả phản hồi từ Flask AI Service
+      if res.is_status_code? || res.code.to_i == 200
+        # Trả về kết quả JSON nhận được từ AI trực tiếp về cho phía Frontend xử lý
         render json: JSON.parse(res.body)
       else
-        render json: { success: false, message: "Cổng dịch vụ AI phản hồi lỗi" }, status: :internal_server_error
+        Rails.logger.error "Flask AI Service phản hồi lỗi với Code: #{res.code} - Body: #{res.body}"
+        render json: { success: false, message: "Dịch vụ AI phản hồi mã lỗi không mong muốn (#{res.code})." }
       end
 
     rescue => e
-      # Nếu dịch vụ AI đang ngủ (gói Free hạ tải sau 15 phút) hoặc đang khởi động, thông báo an toàn cho giao diện UI
-      Rails.logger.error "=== KẾT NỐI API THẤT BẠI: #{e.message} ==="
-      render json: { success: false, message: "Hệ thống AI đang khởi động, vui lòng thử lại sau vài giây!" }
+      # Ghi log chi tiết ra hệ thống để debug trên Render Dashboard khi cần
+      Rails.logger.error "================= LỖI XÁC THỰC CCCD ================="
+      Rails.logger.error "Chi tiết lỗi: #{e.message}"
+      Rails.logger.error e.backtrace.first(10).join("\n")
+      Rails.logger.error "====================================================="
+
+      # Phản hồi lỗi thân thiện về giao diện
+      render json: { 
+        success: false, 
+        message: "Hệ thống kết nối AI đang bận hoặc đang khởi động. Vui lòng thử lại sau ít phút!" 
+      }
     end
   end
 
