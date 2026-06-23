@@ -17,28 +17,34 @@ class NophosoController < ApplicationController
       require 'net/http'
       require 'net/http/post/multipart'
 
-      # Gọi tới API Flask chạy nền nội bộ (sử dụng localhost để tối ưu tuyến đường)
-      url = URI.parse('http://127.0.0.1:5000/predict')
+      # =======================================================================
+      # ĐỌC URL DỊCH VỤ AI TỪ BIẾN MÔI TRƯỜNG RENDER (Cấu hình AI_SERVICE_URL)
+      # Nếu chưa cấu hình trên Render, hệ thống sẽ tự động dùng link localhost mặc định
+      # =======================================================================
+      url_string = ENV['AI_SERVICE_URL'] || 'http://127.0.0.1:5000/predict'
+      url = URI.parse(url_string)
       
       req = Net::HTTP::Post::Multipart.new(
         url.path,
         "file" => UploadIO.new(file.tempfile, file.content_type, file.original_filename)
       )
       
-      # Tăng thời gian chờ lên để an toàn trên CPU Render Free
-      res = Net::HTTP.start(url.host, url.port, open_timeout: 5, read_timeout: 30) do |http|
+      # Tự động kích hoạt kết nối bảo mật use_ssl nếu URL nhận được là giao thức HTTPS (Render mặc định dùng HTTPS)
+      # Tăng read_timeout lên 30 giây để tránh bị ngắt kết nối khi Render gói Free xử lý chậm
+      res = Net::HTTP.start(url.host, url.port, use_ssl: (url.scheme == 'https'), open_timeout: 5, read_timeout: 30) do |http|
         http.request(req)
       end
 
       if res.code == "200"
         render json: JSON.parse(res.body)
       else
-        render json: { success: false, message: "Cổng dịch vụ AI phản hồi lỗi" }
+        render json: { success: false, message: "Cổng dịch vụ AI phản hồi lỗi" }, status: :internal_server_error
       end
 
     rescue => e
+      # Nếu dịch vụ AI đang ngủ (gói Free hạ tải sau 15 phút) hoặc đang khởi động, thông báo an toàn cho giao diện UI
       Rails.logger.error "=== KẾT NỐI API THẤT BẠI: #{e.message} ==="
-      render json: { success: false, message: "Hệ thống AI đang khởi động hoặc quá tải, vui lòng thử lại sau vài giây!" }
+      render json: { success: false, message: "Hệ thống AI đang khởi động, vui lòng thử lại sau vài giây!" }
     end
   end
 
