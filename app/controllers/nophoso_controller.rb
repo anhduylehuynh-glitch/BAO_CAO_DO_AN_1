@@ -31,7 +31,7 @@ class NophosoController < ApplicationController
       
       # Tự động kích hoạt kết nối bảo mật use_ssl nếu URL nhận được là giao thức HTTPS (Render mặc định dùng HTTPS)
       # Tăng read_timeout lên 30 giây để tránh bị ngắt kết nối khi Render gói Free xử lý chậm
-      res = Net::HTTP.start(url.host, url.port, use_ssl: (url.scheme == 'https'), open_timeout: 5, read_timeout: 30) do |http|
+      res = Net::HTTP.start(url.host, url.port, use_ssl: (url.scheme == 'https'), open_timeout: 5, read_timeout: 60) do |http| do |http|
         http.request(req)
       end
 
