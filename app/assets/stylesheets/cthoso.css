@@ -1,205 +1,220 @@
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 :root {
-    --primary-color: #2563eb;
-    --secondary-color: #3b82f6;
-    --dark-color: #1e293b;
+  --primary-color: #2563eb;
+  --secondary-color: #3b82f6;
+  --dark-color: #1e293b;
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    line-height: 1.6;
-    color: #333;
-    overflow-x: hidden;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.6;
+  color: #333;
+  overflow-x: hidden;
 }
 
 .header {
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-    color: white;
-    padding: 1rem 0;
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    box-shadow: 0 2px 20px rgba(37, 99, 235, 0.2);
+  background: linear-gradient(
+    135deg,
+    var(--primary-color) 0%,
+    var(--secondary-color) 100%
+  );
+  color: white;
+  padding: 1rem 0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 20px rgba(37, 99, 235, 0.2);
 
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-left: 40px;
-    padding-right: 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-left: 40px;
+  padding-right: 40px;
 }
 
 .logo {
-    font-size: 1.4rem;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    gap: 10px;
+  font-size: 1.4rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .menu {
-    list-style: none;
-    display: flex;
-    gap: 2rem;
-    align-items: center;
+  list-style: none;
+  display: flex;
+  gap: 2rem;
+  align-items: center;
 }
 
 .menu li {
-    cursor: pointer;
-    font-weight: 500;
-    transition: opacity 0.3s;
+  cursor: pointer;
+  font-weight: 500;
+  transition: opacity 0.3s;
 }
 
 .menu li:hover {
-    opacity: 0.8;
+  opacity: 0.8;
 }
 
 .menu a {
-    color: white;
-    text-decoration: none;
+  color: white;
+  text-decoration: none;
 }
 
 .content {
-    padding: 60px 20px;
-    max-width: 1000px;
-    margin: 0 auto;
+  padding: 60px 20px;
+  max-width: 1000px;
+  margin: 0 auto;
 }
 
-
 main {
-    max-width: 1200px;
-    margin: 40px auto;
-    padding: 0 20px;
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 0 20px;
 }
 
 .actions {
-    margin-bottom: 15px;
+  margin-bottom: 15px;
 }
 
 .noidung {
-    width: 90%;
-    margin: auto;
-    display: flex;
-    flex-direction: column;
+  width: 90%;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .tieude {
-    text-align: center;
-    color: #2563eb;
-    margin: 25px 0;
-    font-size: 40px;
+  text-align: center;
+  color: #2563eb;
+  margin: 25px 0;
+  font-size: 40px;
 }
 
 .khungthongtin {
-    background: white;
-    padding: 20px;
-    margin-bottom: 20px;
-    border-radius: 8px;
-    border: 1px solid #e5e7eb;
+  background: white;
+  padding: 20px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
 }
 
 .bangthongtin {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-    table-layout: fixed;
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  table-layout: auto;
 }
 
 .bangthongtin td,
 .bangthongtin th {
-    border: 1px solid #e5e7eb;
-    padding: 10px;
+  border: 1px solid #e5e7eb;
+  padding: 10px;
 }
 
 .bangthongtin th:first-child {
-    text-align: left;
-    background-color: #fbfbfc;
-    width: 25%;
+  text-align: left;
+  background-color: #fbfbfc;
+  width: 25%;
 }
 
+.khungthongtin {
+  width: 100%;
+  display: block;
+}
+
+.bangthongtin th,
+.bangthongtin td {
+  word-break: normal;
+  overflow-wrap: break-word;
+  white-space: normal;
+}
 
 .khuvucanh {
-    display: flex;
-    gap: 20px;
-    margin-top: 20px;
+  display: flex;
+  gap: 20px;
+  margin-top: 20px;
+  flex-wrap: wrap;
 }
 
 .khunganh {
-    flex: 1;
-    text-align: center;
+  flex: 1;
+  text-align: center;
 }
 
 .khongcoanh {
-    height: 140px;
-    background: #e5e7eb;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border-radius: 6px;
-    color: #64748b;
+  height: 140px;
+  background: #e5e7eb;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 6px;
+  color: #64748b;
 }
 
 .nut {
-    display: flex;
-    justify-content: flex-end;
-    gap: 15px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
 }
 
 .nut button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 6px;
-    color: white;
-    cursor: pointer;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
 }
 
 .duyet {
-    background: #22c55e;
+  background: #22c55e;
 }
 
 .tuchoi {
-    background: #c32323;
+  background: #c32323;
 }
 
-.nut button:hover{
-    background:#960303;
+.nut button:hover {
+  background: #960303;
 }
 .footer {
-    background: var(--dark-color);
-    color: white;
-    padding: 60px 20px 20px;
-    margin-top: 60px;
+  background: var(--dark-color);
+  color: white;
+  padding: 60px 20px 20px;
+  margin-top: 60px;
 }
 
 .footer-content {
-    max-width: 1400px;
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 3rem;
-    margin-bottom: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 3rem;
+  margin-bottom: 2rem;
 }
 
 .footer1 h3 {
-    margin-bottom: 1.5rem;
+  margin-bottom: 1.5rem;
 }
 
 .footer1 ul {
-    list-style: none;
+  list-style: none;
 }
 
 .footer1 ul li {
-    margin-bottom: 0.8rem;
-    color: #94a3b8;
+  margin-bottom: 0.8rem;
+  color: #94a3b8;
 }
 
 .footer2 {
-    text-align: center;
-    padding-top: 2rem;
-    border-top: 1px solid #334155;
-    color: #94a3b8;
+  text-align: center;
+  padding-top: 2rem;
+  border-top: 1px solid #334155;
+  color: #94a3b8;
 }

@@ -680,16 +680,16 @@
     // tiếp tục
     // tiếp tục
     // tiếp tục
-    async function buocTiepTheo(){
-        // Vẫn giữ lại hàm kiểm tra xem thí sinh đã điền đủ thông tin/chọn file hay chưa
-        if (!kiemTraBuoc()) return;
+async function buocTiepTheo(){
+    // Vẫn giữ lại hàm kiểm tra xem thí sinh đã điền đủ thông tin/chọn file hay chưa
+    if (!kiemTraBuoc()) return;
 
-        // Chỉ cần kiểm tra hợp lệ của form xong là cho phép chuyển bước luôn
-        if(buocht < danhSachForm.length - 1){
-            buocht++;
-            hienThiBuoc(buocht);
-        }
+    // Chỉ cần kiểm tra hợp lệ của form xong là cho phép chuyển bước luôn
+    if(buocht < danhSachForm.length - 1){
+        buocht++;
+        hienThiBuoc(buocht);
     }
+}
 
     // quay lại
     function buocTruoc(){
