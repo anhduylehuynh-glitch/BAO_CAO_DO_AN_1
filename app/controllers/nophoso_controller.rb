@@ -26,7 +26,7 @@ class NophosoController < ApplicationController
       )
 
       # Thiết lập thời gian chờ thoải mái cho AI xử lý ảnh nặng
-      res = Net::HTTP.start(url.host, url.port, use_ssl: (url.scheme == 'https'), open_timeout: 10, read_timeout: 60) do |http|
+      res = Net::HTTP.start(url.host, url.port, use_ssl: (url.scheme == 'https'), open_timeout: 10, read_timeout: 180) do |http|
         http.request(req)
       end
 
