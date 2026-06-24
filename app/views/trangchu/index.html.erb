@@ -122,52 +122,72 @@
         <a class="xemthem-btn" onclick="window.location.href='<%= tintuc_tintuc_path %>'">Xem tất cả</a>
     </div>
     <div class="tintuc-grid">
-        <div class="news-card" onclick="window.location.href='<%= noidungtin_noidungtin_path %>'">
-            <div class="news-img-wrap">
-                <div class="news-img-placeholder c1"><%= image_tag "vfast.jpg",  width: 500 %></div>
-                <span class="news-tag">Tin tức</span>
+        <% @tintucs_moinhat.each_with_index do |tin, index| %>
+            <div class="news-card" onclick="window.location.href='<%= noidungtin_noidungtin_path(id: tin.IDTINTUC) %>'">
+                <div class="news-img-wrap">
+                    <div class="news-img-placeholder c<%= index + 1 %>">
+                        <% if tin.ANH_DAI_DIEN.present? %>
+                            <%= image_tag tin.ANH_DAI_DIEN, width: 500 %>
+                        <% else %>
+                            <%= image_tag "vfast.jpg", width: 500 %>
+                        <% end %>
+                    </div>
+                    <span class="news-tag"><%= tin.DANHMUC %></span>
+                </div>
+                <div class="news-body">
+                    <div class="news-date"><%= tin.NGAYDANG&.strftime("%d/%m/%Y") %></div>
+                    <div class="news-title"><%= tin.TIEUDE %></div>
+                    <div class="news-excerpt"><%= truncate(tin.TOM_TAT, length: 150) %></div>
+                </div>
             </div>
-            <div class="news-body">
-                <div class="news-date">19/03/2026</div>
-                <div class="news-title">VLUTE "Tiếp nhận thiết bị tài trợ ô tô điện phục vụ giảng dạy từ công ty TNHH sản xuất và kinh doanh VinFast</div>
-                <div class="news-excerpt">Sáng 19/3/2026, tại Nhà thi đấu đa năng, Trường Đại học Sư phạm Kỹ thuật Vĩnh Long (VLUTE) tổ chức lễ tiếp nhận tài trợ xe ô tô điện phục vụ công tác giảng dạy...</div>
-            </div>
-        </div>
-        <div class="news-card">
-            <div class="news-img-wrap">
-                <div class="news-img-placeholder c2"><%= image_tag "ts.jpg",  width: 500 %></div>
-                <span class="news-tag">Tuyển sinh</span>
-            </div>
-            <div class="news-body">
-                <div class="news-date">14/03/2026</div>
-                <div class="news-title">Tư vấn tuyển sinh năm 2026, đợt 3 – Ngày hội kết nối và trải nghiệm VLUTE OPEN DAY</div>
-                <div class="news-excerpt">Chiều ngày 14/03/2026 Trường Đại học Sư phạm Kỹ thuật Vĩnh Long (VLUTE) tổ chức chương trình tư vấn tuyển sinh đợt 3 với chủ đề "Ngày hội kết nối và trải nghiệm"...</div>
-            </div>
-        </div>
-        <div class="news-card">
-            <div class="news-img-wrap">
-                <div class="news-img-placeholder c3"><%= image_tag "hv.jpg",  width: 500 %></div>
-                <span class="news-tag">Hợp tác</span>
-            </div>
-            <div class="news-body">
-                <div class="news-date">13/03/2026</div>
-                <div class="news-title">VLUTE đến thăm và thảo luận hợp tác đào tạo với Học viện Tư Pháp</div>
-                <div class="news-excerpt">Sáng 13/3/2026, đoàn công tác của Trường Đại học Sư phạm Kỹ thuật Vĩnh Long (VLUTE) đã có buổi làm việc, thăm và trao đổi hợp tác đào tạo với Học viện Tư Pháp...</div>
-            </div>
-        </div>
-        <div class="news-card">
-            <div class="news-img-wrap">
-                <div class="news-img-placeholder c4"><%= image_tag "ct.jpg",  width: 500 %></div>
-                <span class="news-tag">Hướng nghiệp</span>
-            </div>
-            <div class="news-body">
-                <div class="news-date">08/03/2026</div>
-                <div class="news-title">Tư vấn tuyển sinh – hướng nghiệp năm 2026 tại Trường THPT An Bình</div>
-                <div class="news-excerpt">Sáng ngày 08/3/2026 tại Trường Đại học Sư phạm Kỹ thuật Vĩnh Long, Sở Giáo dục và Đào tạo tổ chức chương trình tư vấn tuyển sinh hướng nghiệp cho học sinh lớp 12...</div>
-            </div>
-        </div>
+        <% end %>
     </div>
 </section>
+<script>
+  let slideIndex = 0;
+  let slideInterval;
+
+  function showSlide(index) {
+    const slides = document.querySelectorAll('.hero-slider .slide');
+    const dots = document.querySelectorAll('.hero-slider .dot');
+
+    if (slides.length === 0) return;
+
+    if (index >= slides.length) { slideIndex = 0; }
+    if (index < 0) { slideIndex = slides.length - 1; }
+
+    slides.forEach(slide => slide.classList.remove('active'));
+    dots.forEach(dot => dot.classList.remove('active'));
+
+    slides[slideIndex].classList.add('active');
+    if (dots[slideIndex]) dots[slideIndex].classList.add('active');
+  }
+
+  function currentSlide(index) {
+    slideIndex = index;
+    showSlide(slideIndex);
+    resetInterval();
+  }
+
+  function nextSlide() {
+    slideIndex++;
+    showSlide(slideIndex);
+  }
+
+  function startInterval() {
+    slideInterval = setInterval(nextSlide, 6000);
+  }
+
+  function resetInterval() {
+    clearInterval(slideInterval);
+    startInterval();
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    showSlide(slideIndex);
+    startInterval();
+  });
+</script>
 
 <footer>
     <div class="footer-content">
