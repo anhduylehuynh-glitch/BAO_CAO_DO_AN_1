@@ -7,8 +7,8 @@ class ThongBaoMailer < ApplicationMailer
     @nganh = nganh
 
     mail(
-      to: @thisinh.EMAIL,
-      subject: "Thông báo kết quả tuyển sinh"
+      to: "anhduylehuynh@gmail.com", # Đã sửa từ @thisinh.EMAIL thành mail của bạn
+      subject: "Thông báo kết quả tuyển sinh (Trúng Tuyển - Test)"
     )
   end
 
@@ -17,8 +17,8 @@ class ThongBaoMailer < ApplicationMailer
     @nganh = nganh
 
     mail(
-      to: @thisinh.EMAIL,
-      subject: "Thông báo kết quả tuyển sinh"
+      to: "anhduylehuynh@gmail.com", # Đã sửa từ @thisinh.EMAIL thành mail của bạn
+      subject: "Thông báo kết quả tuyển sinh (Không Trúng Tuyển - Test)"
     )
   end
 
